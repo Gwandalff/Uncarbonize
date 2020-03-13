@@ -9,7 +9,7 @@
   ],
 
   "background": {
-    "scripts": ["log.js"]
+    "scripts": ["HTMLinterpreter.js","utils.js","uncarbonize.js"]
   },
 
   "browser_specific_settings": {
