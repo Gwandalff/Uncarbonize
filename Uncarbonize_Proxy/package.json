@@ -1,0 +1,17 @@
+{
+  "name": "Uncarbonize",
+  "version": "1.0.0",
+  "description": "Adapt the HTML of the requested page for energy consumption sake",
+  "main": "uncarbonize.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node uncarbonize"
+  },
+  "author": "Jouneaux Gwendal",
+  "license": "LGPL",
+  "dependencies": {
+    "express": "^4.17.1",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {}
+}
