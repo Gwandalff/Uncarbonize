@@ -7,8 +7,8 @@ const app = express();
 const port = 8080;
 
 
-const sendBody = (res, origin) => (body) => {
-    const page = body.replace(/<head>/g, '<head><base href="' + origin + '">');
+const sendBody = (res) => (page) => {
+    
     console.log("proxy: HTTP intercept response: MODIFIED RESPONSE BODY");
     res.send(page);
 }
@@ -19,7 +19,7 @@ app.get('/uncarbonize/:energy/:accuracy/:url', (req, res) => {
     const url = new _url.URL(uri);
     const origin = url.origin;
 
-    const send = sendBody(res, origin);
+    const send = sendBody(res);
 
 
     request(uri, (err, response, body) => {
@@ -27,17 +27,19 @@ app.get('/uncarbonize/:energy/:accuracy/:url', (req, res) => {
 
         console.log("PROXY : " + uri);
 
-        fs.writeFileSync('./input.html', body, 'utf-8')
-        exec("html ./input.html --conditional-loading --loop-perforation --degrade-image", (error, stdout, stderr) => {
+	const page = body.replace(/<head>/g, '<head><base href="' + origin + '">');
+
+        fs.writeFileSync('./input.html', page, 'utf-8')
+        exec("html ./input.html --conditional-loading --loop-perforation --degrade-image --degrade-image.folder=\"/home/ImageDegradation/\"", (error, stdout, stderr) => { //-
         if (error) {
             console.log(`error: ${error.message}`);
-            send(body);
-            return;
+            //send(page);
+            //return;
         }
         if (stderr) {
             console.log(`stderr: ${stderr}`);
-            send(body);
-            return
+            //send(page);
+            //return
         }
         send(stdout);
         });
