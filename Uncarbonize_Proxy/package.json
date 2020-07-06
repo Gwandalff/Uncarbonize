@@ -10,9 +10,10 @@
   "author": "Jouneaux Gwendal",
   "license": "LGPL",
   "dependencies": {
-    "minimist": ">=1.2.3",
     "express": "^4.17.1",
-    "request": "^2.88.2"
+    "minimist": ">=1.2.3",
+    "request": "^2.88.2",
+    "zlib": "^1.0.5"
   },
   "devDependencies": {}
 }

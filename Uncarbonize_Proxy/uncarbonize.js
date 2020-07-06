@@ -1,6 +1,7 @@
 const { exec } = require("child_process");
 const request = require('request');
 const express = require('express');
+const zlib = require('zlib');
 const _url = require('url');
 const fs = require('fs');
 const app = express();
@@ -13,24 +14,15 @@ const sendBody = (res) => (page) => {
     res.send(page);
 }
 
-app.get('/uncarbonize/:energy/:accuracy/:url', (req, res) => {
-
-    const uri = decodeURIComponent(req.params.url);
-    const url = new _url.URL(uri);
-    const origin = url.origin;
-
-    const send = sendBody(res);
-
-
-    request(uri, (err, response, body) => {
-        if (err) { return console.log(err); }
-
-        console.log("PROXY : " + uri);
-
+const process = (req, origin, send) => (body) => {
 	const page = body.replace(/<head>/g, '<head><base href="' + origin + '">');
 
         fs.writeFileSync('./input.html', page, 'utf-8')
-        exec("html ./input.html --conditional-loading --loop-perforation --degrade-image --degrade-image.folder=\"/home/ImageDegradation/\"", (error, stdout, stderr) => { //-
+	let command =         "export ADAPTABLE_HTML_ENERGY="+req.params.energy;
+	command = command + "; export ADAPTABLE_HTML_ACCURACY="+req.params.accuracy;
+	command = command + "; html ./input.html --conditional-loading --loop-perforation";
+
+        exec(command, (error, stdout, stderr) => { // --conditional-loading --loop-perforation --degrade-image --degrade-image.folder=\"/home/ImageDegradation/\"
         if (error) {
             console.log(`error: ${error.message}`);
             //send(page);
@@ -43,6 +35,33 @@ app.get('/uncarbonize/:energy/:accuracy/:url', (req, res) => {
         }
         send(stdout);
         });
+}
+
+app.get('/uncarbonize/:energy/:accuracy/:url', (req, res) => {
+
+    const uri = decodeURIComponent(req.params.url);
+    const url = new _url.URL(uri);
+    const origin = url.origin;
+
+    const send = sendBody(res);
+    const callback = process(req, origin, send);
+
+    request({url:uri, encoding: null}, (err, response, body) => {
+        if (err) { return console.log(err); }
+
+        console.log("PROXY : " + uri);
+
+	if(body.indexOf("<html") > -1){
+		callback(body.toString());
+	} else {
+		zlib.gunzip(body, function(err, dezipped) {
+			if(err){
+				callback(body.toString());
+			} else {
+				callback(dezipped.toString());
+			}
+		});
+	}
     });
 });
 
